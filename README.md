@@ -121,4 +121,4 @@ The model of scopes from Racket's new scope-set based expander ([[www.cs.utah.ed
 
 ## Caveats
 
-Does not yet work with DrRacket's binding arrows and jump to definitions.
+DrRacket's binding arrows will point to every location where an identifier was imported via require or the initial bindings of a scope, even those for other, incorrect scopes.
