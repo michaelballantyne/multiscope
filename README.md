@@ -115,6 +115,24 @@ Instead, `#lang multiscope` provides forms resembling the `syntax` syntax-quotin
 
 In the above example `match` and the `#%datum` form for the numeric literals will be resolved in the `b` scope. The value of `arg` will be resolved in its original scope at the use site.
 
+The phase 1 macros also recognize the identifiers of other scopes, allowing nesting. The behavior is a bit different than the phase 0 scope application macros, as they're transforming quoted syntax rather than macros. Scope applications are recognized and applied in any position, rather than just expression position. Thus the previous example could also be written:
+
+```
+#lang multiscope
+
+(scopes
+  [a racket/base (for-syntax racket/base)]
+  [b racket/match])
+  
+(define-syntax (m stx)
+  (syntax-case stx ()
+    [(_ arg)
+     (a ((b match) 1
+          [1 arg]))]))
+
+(provide m)
+```
+
 ## Implementation Concepts
 
 The model of scopes from Racket's new scope-set based expander ([[www.cs.utah.edu/plt/scope-sets/]]) underlies the implementation. Each named scope is implemented by a scope-sets scope object in the macro expander (via  `make-syntax-introducer`). The scope-applying macro for a given named scope applies its scope object and removes the scope object for the other named scopes from the syntax of its argument.
@@ -122,3 +140,5 @@ The model of scopes from Racket's new scope-set based expander ([[www.cs.utah.ed
 ## Caveats
 
 DrRacket's binding arrows will point to every location where an identifier was imported via require or the initial bindings of a scope, even those for other, incorrect scopes.
+
+There is currently no scoping form that behaves like quasiquote, so some macros may be inconvenient to write.
