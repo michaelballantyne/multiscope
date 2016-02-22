@@ -133,6 +133,12 @@ The phase 1 macros also recognize the identifiers of other scopes, allowing nest
 (provide m)
 ```
 
+## Installation
+
+```
+raco pkg install https://github.com/michaelballantyne/multiscope.git
+```
+
 ## Implementation Concepts
 
 The model of scopes from Racket's new scope-set based expander ([[www.cs.utah.edu/plt/scope-sets/]]) underlies the implementation. Each named scope is implemented by a scope-sets scope object in the macro expander (via  `make-syntax-introducer`). The scope-applying macro for a given named scope applies its scope object and removes the scope object for the other named scopes from the syntax of its argument.
