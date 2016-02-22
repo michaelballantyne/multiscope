@@ -115,7 +115,7 @@ Instead, `#lang multiscope` provides forms resembling the `syntax` syntax-quotin
 
 In the above example `match` and the `#%datum` form for the numeric literals will be resolved in the `b` scope. The value of `arg` will be resolved in its original scope at the use site.
 
-The phase 1 macros also recognize the identifiers of other scopes, allowing nesting. The behavior is a bit different than the phase 0 scope application macros, as they're transforming quoted syntax rather than macros. Scope applications are recognized and applied in any position, rather than just expression position. Thus the previous example could also be written:
+The phase 1 macros also recognize the identifiers of other scopes, allowing nesting. The behavior is a bit different than the phase 0 scope application macros. Scope applications are recognized and applied in any position, rather than just expression position. Thus the previous example could also be written:
 
 ```
 #lang multiscope
