@@ -2,4 +2,4 @@
 
 (define collection "multiscope")
 (define version "1.0")
-(define deps '("base"))
+(define deps '("base" "rackunit-lib"))
