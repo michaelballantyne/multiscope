@@ -10,7 +10,7 @@
   (check-exn
     (lambda (e)
       (and (exn:fail:syntax? e)
-           (string-prefix? (exn-message e) "multiscope:")))
+           (string-contains? (exn-message e) "multiscope:")))
     (lambda ()
       (eval #'(let ([x 2])
                 (macro x)))
@@ -22,7 +22,7 @@
   (check-exn
     (lambda (e)
       (and (exn:fail:syntax? e)
-           (string-prefix? (exn-message e) "multiscope:")))
+           (string-contains? (exn-message e) "multiscope:")))
     (lambda ()
       (eval #'(let-syntax ([m3 (macro2)])
                  (let ([x 2])
