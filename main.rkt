@@ -1,4 +1,3 @@
-
 #lang racket/base
 
 (require
@@ -32,21 +31,17 @@
          [default-scope default-require-specs ...]
          [scope scope-require-specs ...] ...)
         forms ...)
-     
-     (let ()
+     (begin
        ; effect at phase 1
        (set! expanding-module1? #t)
        
        (with-syntax ([(all-scopes ...) #'(default-scope scope ...)]
                      [((all-require-specs ...) ...) #'((default-require-specs ...)
                                                        (scope-require-specs ...) ...)])
-         (with-syntax ([(scope-introducer ...) (map syntax->datum (generate-temporaries #'(all-scopes ...)))]
+         (with-syntax ([(scope-introducer ...) (generate-temporaries #'(all-scopes ...))]
                        ; hygiene-breaking introductions:
                        [#%top-interaction (datum->syntax stx '#%top-interaction)]
-                       [require (datum->syntax stx 'require)]
                        [subref (datum->syntax stx ''sub)]
-                       [require-intro #'require]
-                       [(all-scopes-intro ...) (syntax-local-introduce #'(all-scopes ...))]
                        ; We create the identifying syntax object scopes for each scope during the
                        ; module-begin exapansion rather than in the resulting module to
                        ; ensure they are the same for every instantiation of the module,
@@ -60,7 +55,11 @@
                                   (set-expanding-module2!)
                                   #'5)])
                   (m)))
+              ; Use this submodule so that `(provide (all-defined-out))` in the final
+              ; module doesn't export the scope application definitions.
               (module sub racket/base
+                ; Use another submodule so we don't have to repeat these definitions
+                ; for the two phases.
                 (module sub racket/base
                   ; The scope created during the expansion is transferred to the expanded
                   ; module through a syntax object having the scope and a paired syntax object
@@ -85,14 +84,22 @@
                   (provide scope-introducer ...
                            apply-scope))
                 
-                (require-intro
-                 (only-in multiscope)
-                 (for-syntax racket/base racket/list (submod "." sub))
-                 (for-meta 2 racket/base (submod "." sub)) ; for quasisyntax-like phase 1 macro
-                 )
+                (require
+                  ; For later reference to `expanding-module1?` and `expanding-module2?`. Not needed for the
+                  ; binding (because those references are macro-inserted), but needed to ensure the `multiscope`
+                  ; module has been loaded into the namespace. (Hence the empty identifier list in `only-in`.
+                  (only-in multiscope)
+                  ; Use `rename-in` to make sure the `scope-introducer` bindings have the right scope to capture
+                  ; inserted references in this module. (because generate-temporaries makes identifiers with scopes
+                  ; different from those normally on macro-introduced identifiers)
+                  (for-syntax racket/base racket/list
+                              (rename-in (submod "." sub) [scope-introducer scope-introducer] ...))
+                  ; for quasisyntax-like phase 1 macro
+                  (for-meta 2 racket/base
+                            (rename-in (submod "." sub) [scope-introducer scope-introducer] ...)))
                 
                 ; phase 0 macro; produces a scoped version of the argument syntax.
-                (define-syntax (all-scopes-intro stx)
+                (define-syntax (all-scopes stx)
                   (syntax-case stx ()
                     [(_ body (... ...))
                      (when (not expanding-module1?)
@@ -115,8 +122,8 @@
                 (begin-for-syntax
                   (begin-for-syntax
                     (define (scoped-syntax this-introducer stx)
-                      (syntax-case stx (all-scopes-intro ...)
-                        [(all-scopes-intro body)
+                      (syntax-case stx (all-scopes ...)
+                        [(all-scopes body)
                          (scoped-syntax
                           scope-introducer
                           #'body)]
@@ -134,7 +141,7 @@
                              (apply-scope this-introducer (list scope-introducer ...) #'el))]
                         )))
                   
-                  (define-syntax (all-scopes-intro stx)
+                  (define-syntax (all-scopes stx)
                     (syntax-case stx ()
                       [(_ body (... ...))
                        (when (not expanding-module2?)
@@ -146,9 +153,8 @@
                   )
                 
                 (provide
-                 all-scopes-intro ...
-                 (for-syntax all-scopes-intro ...)
-                 ))
+                 all-scopes ...
+                 (for-syntax all-scopes ...)))
               
               (require subref)
               
