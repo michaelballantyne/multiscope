@@ -147,4 +147,13 @@ The model of scopes from Racket's new scope-set based expander ([[www.cs.utah.ed
 
 DrRacket's binding arrows will point to every location where an identifier was imported via require or the initial bindings of a scope, even those for other, incorrect scopes.
 
-There is currently no scoping form that behaves like quasiquote, so some macros may be inconvenient to write.
+There is currently no scoping form that behaves like `quasisyntax`. Instead, use `with-syntax` to bind syntax fragments that can be assembled by the scoped syntax-quoting forms. For example, the `match` example above could also be written:
+
+```
+(define-syntax (m stx)
+  (syntax-case stx ()
+    [(_ arg)
+     (with-syntax ([match (b match)])
+       (a (match 1
+            [1 arg])))]))
+```
