@@ -28,9 +28,8 @@ Code generation functions can use the same names as forms from Racket, and stage
 ```
 #lang multiscope
 
-(scopes
-  [rkt racket rackunit]
-  [mk "mk/mk.rkt" (only-in racket/base define quasiquote unquote)])
+(scopes [r racket rackunit]
+        [mk minikanren])
 
 (mk
   (define (append l s out)
@@ -45,7 +44,7 @@ Code generation functions can use the same names as forms from Racket, and stage
       [l2 '(c d e)])
   (check-equal?
     (first
-      (mk (run 1 (q) (append (rkt l1) (rkt l2) q))))
+      (mk (run 1 (q) (append (r l1) (r l2) q))))
     (append l1 l2)))
 ```
 
