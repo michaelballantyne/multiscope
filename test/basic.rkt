@@ -5,6 +5,7 @@
   [a racket/base]
   [b])
 
+
 (module a racket/base
   (define x 'a)
   (provide x))
@@ -55,4 +56,17 @@
           x
           y)))
     '(x-a y-a)))
+
+(define z 6)
+
+(test-case "top-interaction"
+  (check-exn
+   (lambda (e)
+     #t)
+   (lambda ()
+     (eval 'x ns)))
+  
+  (check-equal?
+   (eval '(#%top-interaction . z) ns)
+   6))
 
