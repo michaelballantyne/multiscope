@@ -29,7 +29,9 @@
       (set! expanding-module2? #t))))
 
 
-(module multi-phase-helpers racket
+(module multi-phase-helpers racket/base
+  (require (for-syntax racket/base))
+
   (define-syntax-rule
     (transient-effect statements ...)
     (begin
