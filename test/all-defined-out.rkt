@@ -19,4 +19,4 @@
   (lambda (e)
     (string-contains? (exn-message e) "s1: undefined"))
   (lambda ()
-    (eval '(s1 x))) 5)
+    (eval '(s1 x))))
